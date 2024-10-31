@@ -97,7 +97,7 @@ def launch():
     args.epochs = 500
     args.batch_size = 12
     args.image_size = 64
-    args.dataset_path = r''
+    args.dataset_path = r'Landscape_Dataset'
     args.device = 'cuda'
     args.lr = 3e-4
     train(args)
