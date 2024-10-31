@@ -6,6 +6,8 @@ from torch import optim
 from tqdm import tqdm
 import logging
 from torch.utils.tensorboard import SummaryWriter
+from modules import UNet
+from utils import save_images, get_data, setup_logging
 
 logging.basicConfig(format = '%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO, datafnt="%I:%M:%S")
 
