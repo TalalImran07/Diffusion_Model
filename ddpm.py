@@ -39,7 +39,7 @@ class Diffusion:
         logging.info(f'Sampling {n} are new images....')
         model.eval()
         with torch.no_grad():
-            x = torch.randn((n, 3, self.img_size, self.img_size)).to(self.device)
+            x = torch.randn((n, 3, self.image_size, self.image_size)).to(self.device)
             for i in tqdm(reversed(range(1, self.noise_steps)), position = 0):
                 t = (torch.ones(n)*i).long().to(self.device)
                 predicted_noise = model(x, t)
@@ -96,7 +96,7 @@ def launch():
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     args.run_name = 'DDPM_Unconditional'
-    args.epochs = 500
+    args.epochs = 50
     args.batch_size = 8
     args.image_size = 64
     args.dataset_path = r'Landscape_Data'

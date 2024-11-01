@@ -1,1 +1,7 @@
 Landscape_Dataset/
+__pychache__
+Images
+models\DDPM_Unconditional
+results\DDPM_Unconditional
+runs\DDPM_Unconditional
+
