@@ -12,7 +12,7 @@ class DoubleConv(nn.Module):
         self.double_conv = nn.Sequential(
             nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
             nn.GroupNorm(1, mid_channels),
-            nn.GELU,
+            nn.GELU(),
             nn.Conv2d(mid_channels, out_channels, kernel_size = 3, padding = 1, bias = False),
             nn.GroupNorm(1, out_channels),
         )
@@ -83,14 +83,14 @@ class SelfAttention(nn.Module):
         self.ff_self = nn.Sequential(
             nn.LayerNorm([channels]),
             nn.Linear(channels, channels),
-            nn.GELU,
+            nn.GELU(),
             nn.Linear(channels, channels)
         )
     
     def forward(self, x):
         x = x.view(-1, self.channels, self.size * self.size).swapaxes(1, 2)
         x_ln = self.ln(x)
-        attention_value, _ = self.mha(x_ln, x_ln)
+        attention_value, _ = self.mha(x_ln, x_ln, x_ln)
         attention_value = attention_value + x
         attention_value = self.ff_self(attention_value) + attention_value
         return attention_value.swapaxes(2, 1).view(-1, self.channels, self.size, self.size)
@@ -125,28 +125,22 @@ class UNet(nn.Module):
     def pos_encoding(self, t, channels):
         inv_freq = 1.0 / (
             10000
-
             ** (torch.arange(0, channels, 2, device=self.device).float()/channels)
-
         )
         pos_enc_a = torch.sin(t.repeat(1, channels // 2) * inv_freq)
         pos_enc_b = torch.cos(t.repeat(1, channels // 2) * inv_freq)
         pos_enc = torch.cat([pos_enc_a, pos_enc_b], dim = -1)
         return pos_enc
-    
-    def forward(self, x, t):
-        t = t.unsqueeze(-1).type(torch.float)
-        t = self.pos_encoding(t, self.time_dim)
+
 
     def forward(self, x, t):
         t = t.unsqueeze(-1).type(torch.float)
         t = self.pos_encoding(t, self.time_dim)
 
-        x1 = self.inc1(x)
+        x1 = self.inc(x)
         x2 = self.down1(x1, t)
         x2 = self.sa1(x2)
         x3 = self.down2(x2, t)
-        x3 = self.sa2(x2, t)
         x3 = self.sa2(x3)
         x4 = self.down3(x3, t)
         x4 = self.sa3(x4)

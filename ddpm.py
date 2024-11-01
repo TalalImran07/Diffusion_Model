@@ -12,11 +12,11 @@ from utils import save_images, get_data, setup_logging
 logging.basicConfig(format = '%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO, datefmt="%I:%M:%S")
 
 class Diffusion:
-    def __init__(self, noise_steps = 1000, beta_start = 1e-4, beta_end=0.02, img_size=64, device = 'cuda'):
+    def __init__(self, noise_steps = 1000, beta_start = 1e-4, beta_end=0.02, image_size=64, device = 'cuda'):
         self.noise_steps = noise_steps
         self.beta_start = beta_start
         self.beta_end = beta_end
-        self.img_size - img_size
+        self.image_size = image_size
         self.device = device
 
         self.beta = self.prepare_noise_schedule().to(device)
@@ -24,7 +24,7 @@ class Diffusion:
         self.alpha_hat = torch.cumprod(self.alpha, dim = 0)
 
     def prepare_noise_schedule(self):
-        return torch.linespace(self.beta_start, self.beta_end, self.noise_steps)
+        return torch.linspace(self.beta_start, self.beta_end, self.noise_steps)
     
     def noise_images(self, x, t):
         sqrt_alpha_hat = torch.sqrt(self.alpha_hat[t])[:, None, None, None]
@@ -66,7 +66,7 @@ def train(args):
     model = UNet().to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     mse = nn.MSELoss()
-    diffusion = Diffusion(img_size = args.image_size, device = device)
+    diffusion = Diffusion(image_size = args.image_size, device = device)
     logger = SummaryWriter(os.path.join('runs', args.run_name))
     l = len(dataloader)
 
@@ -84,7 +84,7 @@ def train(args):
             loss.backward()
             optimizer.step()
 
-            pbar.st_postfix(MSE=loss.item())
+            pbar.set_postfix(MSE=loss.item())
             logger.add_scalar('MSE', loss.item(), global_step=epoch*l + i)
         
         sampled_images = diffusion.sample(model, n=images.shape[0])
@@ -97,9 +97,9 @@ def launch():
     args = parser.parse_args()
     args.run_name = 'DDPM_Unconditional'
     args.epochs = 500
-    args.batch_size = 12
+    args.batch_size = 8
     args.image_size = 64
-    args.dataset_path = r'Landscape_Dataset'
+    args.dataset_path = r'Landscape_Data'
     args.device = 'cuda'
     args.lr = 3e-4
     train(args)
